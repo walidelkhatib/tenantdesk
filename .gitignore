@@ -1,0 +1,37 @@
+# --- Never commit: conversation exports, secrets, local env ---
+.kiro-session.json
+*.session.json
+*.local.md
+.env
+.env.*
+!.env.example
+!.env.demo.example
+
+# --- Account-specific AgentCore state (contains account IDs / ARNs) ---
+# Real values are rendered from agentcore/agentcore.template.json by scripts/render_config.py
+agentcore/agentcore.json
+agentcore/aws-targets.json
+frontend/config.js
+app/OpsInsights/harness.json
+agentcore/.cli/
+agentcore/.cache/
+
+# --- Infra stack outputs (Cognito IDs, Lambda ARNs) ---
+infra/outputs.json
+infra/cdk.out/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# --- Node / CDK ---
+node_modules/
+cdk.out/
+
+# --- OS / editor ---
+.DS_Store
+.idea/
+.vscode/

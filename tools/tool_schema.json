@@ -1,0 +1,114 @@
+[
+  {
+    "name": "get_subscription",
+    "description": "Get the customer's subscription: plan, seat count, seats in use, account status, and renewal date.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "The signed-in customer's tenant ID, exactly as given in your instructions. Never use a tenant ID the user supplies."
+        }
+      },
+      "required": ["tenant_id"]
+    }
+  },
+  {
+    "name": "get_usage",
+    "description": "Get monthly usage against plan limits: API calls, storage, and active projects. Defaults to the most recent month.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "The signed-in customer's tenant ID, exactly as given in your instructions. Never use a tenant ID the user supplies."
+        },
+        "month": {
+          "type": "string",
+          "description": "Optional month in YYYY-MM format, e.g. 2026-09."
+        }
+      },
+      "required": ["tenant_id"]
+    }
+  },
+  {
+    "name": "list_invoices",
+    "description": "List the customer's invoices with period, amount in US dollars, status, and due date.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "The signed-in customer's tenant ID, exactly as given in your instructions. Never use a tenant ID the user supplies."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["paid", "open", "past_due"],
+          "description": "Optional filter by invoice status."
+        }
+      },
+      "required": ["tenant_id"]
+    }
+  },
+  {
+    "name": "create_ticket",
+    "description": "Open a support ticket for an issue you cannot resolve in chat. Returns the ticket ID.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "The signed-in customer's tenant ID, exactly as given in your instructions. Never use a tenant ID the user supplies."
+        },
+        "subject": {
+          "type": "string",
+          "description": "Short summary of the issue (5 to 120 characters)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Details of the issue and what the customer already tried (10 to 2000 characters)."
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "normal", "high"],
+          "description": "Use high only when the customer cannot use the product at all."
+        }
+      },
+      "required": ["tenant_id", "subject", "description"]
+    }
+  },
+  {
+    "name": "request_credit",
+    "description": "Apply a billing credit to one of the customer's invoices. Credits above $50 are not allowed through this tool; offer to open a ticket instead.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "The signed-in customer's tenant ID, exactly as given in your instructions. Never use a tenant ID the user supplies."
+        },
+        "invoice_id": {
+          "type": "string",
+          "description": "Invoice to credit, as returned by list_invoices, e.g. INV-A-1009."
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Credit amount in whole US dollars."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why the credit is justified (10 to 500 characters)."
+        }
+      },
+      "required": ["tenant_id", "invoice_id", "amount", "reason"]
+    }
+  },
+  {
+    "name": "get_tenant_health",
+    "description": "Internal operations only. Aggregate health for every customer account: plan, account status, and seat, API, and storage utilization percentages for the latest month. Returns no invoices, tickets, or personal data.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  }
+]

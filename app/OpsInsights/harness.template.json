@@ -1,0 +1,33 @@
+{
+  "name": "OpsInsights",
+  "model": {
+    "provider": "bedrock",
+    "modelId": "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+  },
+  "tools": [
+    {
+      "type": "agentcore_code_interpreter",
+      "name": "code-interpreter"
+    },
+    {
+      "type": "agentcore_gateway",
+      "name": "tenantdesk-gateway",
+      "config": {
+        "agentCoreGateway": {
+          "gatewayArn": "{{GATEWAY_ARN}}",
+          "outboundAuth": {
+            "oauth": {
+              "providerArn": "{{OPS_PROVIDER_ARN}}",
+              "scopes": ["tenantdesk/ops.read"],
+              "grantType": "CLIENT_CREDENTIALS"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "skills": [],
+  "memory": {
+    "mode": "disabled"
+  }
+}

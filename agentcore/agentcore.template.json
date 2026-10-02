@@ -1,0 +1,119 @@
+{
+  "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
+  "name": "TenantDesk",
+  "version": 1,
+  "managedBy": "CDK",
+  "tags": {
+    "agentcore:created-by": "agentcore-cli",
+    "agentcore:project-name": "TenantDesk",
+    "project": "tenantdesk"
+  },
+  "runtimes": [
+    {
+      "name": "SupportAgent",
+      "description": "Customer-facing support agent. Acts as the signed-in user.",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/SupportAgent/",
+      "runtimeVersion": "PYTHON_3_14",
+      "networkMode": "PUBLIC",
+      "protocol": "HTTP",
+      "requestHeaderAllowlist": ["Authorization"],
+      "authorizerType": "CUSTOM_JWT",
+      "authorizerConfiguration": {
+        "customJwtAuthorizer": {
+          "discoveryUrl": "{{COGNITO_DISCOVERY_URL}}",
+          "allowedClients": ["{{WEB_CLIENT_ID}}"]
+        }
+      }
+    }
+  ],
+  "memories": [
+    {
+      "name": "SupportAgentMemory",
+      "eventExpiryDuration": 30,
+      "strategies": [
+        {
+          "type": "SEMANTIC",
+          "namespaceTemplates": ["/users/{actorId}/facts"]
+        },
+        {
+          "type": "SUMMARIZATION",
+          "namespaceTemplates": ["/summaries/{actorId}/{sessionId}"]
+        }
+      ]
+    }
+  ],
+  "knowledgeBases": [],
+  "credentials": "{{CREDENTIALS}}",
+  "evaluators": [
+    {
+      "name": "TenantLeakage",
+      "level": "SESSION",
+      "description": "Fails a session if another tenant's invoice IDs or records appear in tool results or replies",
+      "config": {
+        "codeBased": {
+          "managed": {
+            "codeLocation": "app/TenantLeakage/",
+            "entrypoint": "lambda_function.handler",
+            "timeoutSeconds": 30,
+            "additionalPolicies": ["execution-role-policy.json"]
+          }
+        }
+      }
+    }
+  ],
+  "onlineEvalConfigs": [
+    {
+      "name": "SupportQuality",
+      "description": "Scores every SupportAgent session for quality and tenant leakage",
+      "agent": "SupportAgent",
+      "evaluators": ["Builtin.GoalSuccessRate", "Builtin.Helpfulness", "TenantLeakage"],
+      "samplingRate": 100,
+      "enableOnCreate": true
+    }
+  ],
+  "agentCoreGateways": [
+    {
+      "name": "tenantdesk-gateway",
+      "description": "Tenant-scoped support tools, guarded by Cedar policies",
+      "protocolType": "None",
+      "authorizerType": "CUSTOM_JWT",
+      "authorizerConfiguration": {
+        "customJwtAuthorizer": {
+          "discoveryUrl": "{{COGNITO_DISCOVERY_URL}}",
+          "allowedClients": ["{{WEB_CLIENT_ID}}", "{{OPS_CLIENT_ID}}"]
+        }
+      },
+      "enableSemanticSearch": false,
+      "exceptionLevel": "NONE",
+      "targets": [
+        {
+          "name": "TenantTools",
+          "targetType": "lambdaFunctionArn",
+          "lambdaFunctionArn": {
+            "lambdaArn": "{{TOOLS_FUNCTION_ARN}}",
+            "toolSchemaFile": "tools/tool_schema.json"
+          }
+        }
+      ],
+      "policyEngineConfiguration": {
+        "policyEngineName": "TenantDeskPolicies",
+        "mode": "ENFORCE"
+      }
+    }
+  ],
+  "policyEngines": [
+    {
+      "name": "TenantDeskPolicies",
+      "description": "Tenant isolation and billing guardrails for TenantDesk tools",
+      "policies": "{{POLICIES}}"
+    }
+  ],
+  "configBundles": [],
+  "abTests": [],
+  "harnesses": "{{HARNESSES}}",
+  "datasets": [],
+  "capacityProviders": [],
+  "payments": []
+}

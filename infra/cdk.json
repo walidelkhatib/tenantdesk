@@ -1,0 +1,6 @@
+{
+  "app": ".venv/bin/python app.py",
+  "context": {
+    "callbackUrl": "http://localhost:8080/"
+  }
+}
